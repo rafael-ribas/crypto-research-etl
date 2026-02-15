@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+
+# Virtualenv
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated reports
+reports/report.html
+reports/report.pdf
+reports/charts/*.png
+
+# SQLite
+data/*.db

@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ title }}</title>
+  <link rel="stylesheet" href="{{ css_path }}">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">
+        <img src="{{ logo_path }}" alt="logo" />
+        <div>
+          <div class="badge">Market Brief</div>
+          <p class="p" style="margin-top:8px;">
+            Relatório diário automático com foco nas Top 5 por Market Cap, risco/retorno e comportamento relativo ao BTC.
+          </p>
+        </div>
+      </div>
+      <div class="h-meta">
+        <div class="title">{{ title }}</div>
+        <div class="sub">As of: {{ as_of }} (UTC) • Janela: {{ window_days }} dias • Corr: {{ corr_window }} dias</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Snapshot -->
+      <div class="card">
+        <h2>Resumo (Snapshot)</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Ativo</th>
+              <th class="num">Preço</th>
+              <th class="num">Market Cap</th>
+              <th class="num">Volume 24h</th>
+              <th class="num">Ret 1d</th>
+              <th class="num">Vol 30d</th>
+              <th class="num">Liq (V/MCap)</th>
+              <th class="num">Corr BTC<br>({{ corr_window }}d)</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for r in snapshot_table %}
+            <tr>
+              <td>{{ r.name }} ({{ r.symbol }})</td>
+              <td class="num">{{ r.price_usd }}</td>
+              <td class="num">{{ r.market_cap_usd }}</td>
+              <td class="num">{{ r.volume_24h_usd }}</td>
+              <td class="num">{{ r.return_1d }}</td>
+              <td class="num">{{ r.vol_30d }}</td>
+              <td class="num">{{ r.liq_ratio }}</td>
+              <td class="num">{{ r.corr_btc }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="kpi">
+          <div class="box">
+            <div class="label">Líder de retorno ({{ perf_window }}d)</div>
+            <div class="value">{{ kpis.best_asset }}</div>
+            <div class="hint">{{ kpis.best_return }}</div>
+          </div>
+          <div class="box">
+            <div class="label">Maior volatilidade (30d)</div>
+            <div class="value">{{ kpis.riskiest_asset }}</div>
+            <div class="hint">{{ kpis.riskiest_vol }}</div>
+          </div>
+        </div>
+
+        <p class="p" style="margin-top:12px;">
+          <span class="tag">Dominância BTC (Top 5):</span>
+          <b style="margin-left:8px;">{{ kpis.btc_dominance }}</b>
+        </p>
+      </div>
+
+      <!-- Commentary -->
+      <div class="card">
+        <h2>Comentários automáticos</h2>
+        <p class="p">Insights gerados com base na janela mais recente e nas métricas calculadas.</p>
+        <ul>
+        {% for c in commentary %}
+          <li>{{ c }}</li>
+        {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Performance & Risk -->
+      <div class="card">
+        <h2>Performance & Risco</h2>
+        <div class="two-col">
+          <div>
+            <h3 class="section-title">Retorno acumulado</h3>
+            <table class="small-table">
+              <thead>
+                <tr>
+                  <th>Ativo</th>
+                  <th class="num">Ret 7d</th>
+                  <th class="num">Ret 30d</th>
+                  <th class="num">Ret 90d</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for r in perf_table %}
+                <tr>
+                  <td>{{ r.asset_id.upper() }}</td>
+                  <td class="num">{{ r.ret_7d }}</td>
+                  <td class="num">{{ r.ret_30d }}</td>
+                  <td class="num">{{ r.ret_90d }}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h3 class="section-title">Risco / Ajuste ao risco</h3>
+            <table class="small-table">
+              <thead>
+                <tr>
+                  <th>Ativo</th>
+                  <th class="num">Sharpe 30d*</th>
+                  <th class="num">Max DD ({{ window_days }}d)</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for r in risk_table %}
+                <tr>
+                  <td>{{ r.asset_id.upper() }}</td>
+                  <td class="num">{{ r.sharpe_30d }}</td>
+                  <td class="num">{{ r.max_dd }}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+            <p class="p" style="margin-top:10px;">* Sharpe simplificado: retorno 30d / vol 30d (sem taxa livre de risco).</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="card charts">
+        <h2>Gráficos</h2>
+
+        <h3 style="margin:10px 0 8px 0;">Preços Normalizados</h3>
+        <img src="{{ charts.normalized_prices }}" alt="normalized prices" />
+
+        <h3 style="margin:14px 0 8px 0;">Volatilidade 30d (último valor)</h3>
+        <img src="{{ charts.vol_30d }}" alt="vol 30d" />
+
+        <h3 style="margin:14px 0 8px 0;">Correlação vs BTC ({{ corr_window }}d)</h3>
+        <img src="{{ charts.corr_btc }}" alt="corr btc" />
+
+        <h3 style="margin:14px 0 8px 0;">Heatmap de correlação (Top 5)</h3>
+        <img src="{{ charts.corr_heatmap }}" alt="corr heatmap" />
+
+        <h3 style="margin:14px 0 8px 0;">Risco x Retorno (30d)</h3>
+        <img src="{{ charts.risk_return }}" alt="risk return" />
+      </div>
+
+      <!-- Notes -->
+      <div class="card">
+        <h2>Notas metodológicas</h2>
+        <ul>
+        {% for n in notes %}
+          <li>{{ n }}</li>
+        {% endfor %}
+        </ul>
+        <p class="p" style="margin-top:10px;">
+          Arquivos: HTML em <b>reports/report.html</b> e PDF em <b>reports/report.pdf</b>.
+        </p>
+      </div>
+    </div>
+
+    <div class="footer">
+      Gerado automaticamente • {{ as_of }} • Dados: CoinGecko
+    </div>
+  </div>
+</body>
+</html>
